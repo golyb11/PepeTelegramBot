@@ -16,7 +16,7 @@
 
 # Ключ API OpenRouter — используется для авторизации запросов к LLM
 DEFAULT_API_KEY: str = (
-    "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"
+    "ваш API ключ"
 )
 
 # Модель по умолчанию — бесплатная модель на OpenRouter
