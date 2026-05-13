@@ -13,11 +13,11 @@ logger: logging.Logger = logging.getLogger(__name__)
 
 @router.message(Command("ask"))
 async def handle_ask(message: Message) -> None:
-    """Обработчик /ask <вопрос> — Режим B: вежливый ассистент."""
+
     raw_text: str = message.text or ""
     parts: list[str] = raw_text.split(maxsplit=1)
 
-    # Сохраняем сообщение в историю чата (даже если это команда)
+
     await database.save_message(
         chat_id=message.chat.id,
         user_id=message.from_user.id,
@@ -36,10 +36,10 @@ async def handle_ask(message: Message) -> None:
     question: str = parts[1].strip()
     logger.info("Получен /ask от user_id=%d: '%s'", message.from_user.id, question[:80])
 
-    # Индикатор "печатает..."
+
     await message.bot.send_chat_action(chat_id=message.chat.id, action=ChatAction.TYPING)
 
-    # Генерируем ответ через LLM
+
     reply_text: str = await llm_service.generate_reply(
         system_prompt=ASSISTANT_SYSTEM_PROMPT, user_text=question,
     )
