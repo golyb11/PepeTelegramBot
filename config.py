@@ -6,7 +6,7 @@
 # Дефолтные учётные данные (fallback на первый запуск)
 # ---------------------------------------------------------------------------
 DEFAULT_API_KEY: str = (
-    "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"
+    "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"
 )
 DEFAULT_MODEL: str = "inclusionai/ring-2.6-1t:free"
 
