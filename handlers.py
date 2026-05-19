@@ -213,7 +213,7 @@ async def cb_set_model(callback: CallbackQuery):
     await callback.answer("Готово!")
 
 
-@router.callback_query(F.data.startswith("set_model_direct:"))
+@router.callback_query(F.data.startswith("smd:"))
 async def cb_set_model_direct(callback: CallbackQuery):
     model_id = callback.data.split(":", 1)[1]
     if model_id not in AVAILABLE_MODELS:

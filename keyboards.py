@@ -50,6 +50,6 @@ def setmodel_direct_kb() -> InlineKeyboardMarkup:
     buttons = []
     for model_id, display_name in AVAILABLE_MODELS.items():
         buttons.append([
-            InlineKeyboardButton(text=display_name, callback_data=f"set_model_direct:{model_id}")
+            InlineKeyboardButton(text=display_name, callback_data=f"smd:{model_id}")
         ])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
