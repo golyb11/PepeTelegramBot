@@ -124,62 +124,54 @@
   РАЗДЕЛ 6: КАК ПОСТАВИТЬ БОТА НА БЕСПЛАТНЫЙ ХОСТИНГ (Render.com)
 ═══════════════════════════════════════════════════════════════════════════════
 
-Пошаговая инструкция для деплоя бота, чтобы он работал 24/7:
+Пошаговая инструкция для деплоя бота, чтобы он работал 24/7 (с учетом ограничений Render):
 
 ШАГ 1: Подготовка проекта
-  1. Убедитесь, что в папке проекта есть файлы:
-     - main.py, config.py, db.py, handlers.py, keyboards.py, llm_router.py
-     - requirements.txt
+  1. Убедитесь, что в папке проекта есть все файлы (`main.py`, `keep_alive.py`, `requirements.txt` и т.д.).
   2. Загрузите проект на GitHub:
-     a. Зайдите на github.com и создайте новый репозиторий
-     b. В консоли в папке проекта:
-        git init
-        git add .
-        git commit -m "pepe bot"
-        git remote add origin https://github.com/ВАШ_ЮЗЕР/pepe-bot.git
-        git push -u origin main
+     - Зайдите на github.com и создайте новый репозиторий.
+     - В консоли выполните команды:
+       git init
+       git add .
+       git commit -m "pepe bot"
+       git remote add origin https://github.com/ВАШ_ЮЗЕР/pepe-bot.git
+       git push -u origin main
 
 ШАГ 2: Регистрация на Render.com
-  1. Зайдите на https://render.com
-  2. Нажмите "Get Started for Free"
-  3. Зарегистрируйтесь через GitHub (самый удобный способ)
+  1. Зайдите на https://render.com и нажмите "Get Started for Free".
+  2. Зарегистрируйтесь через GitHub.
 
-ШАГ 3: Создание сервиса
-  1. На дашборде Render нажмите "New +" → "Background Worker"
-     (именно Background Worker, НЕ Web Service — бот не веб-сервер!)
-  2. Подключите ваш GitHub-репозиторий с ботом
+ШАГ 3: Создание Web Service
+  1. На дашборде Render нажмите "New +" → "Web Service".
+     (Именно Web Service, так как Background Worker больше не имеет бесплатного тарифа!)
+  2. Подключите ваш GitHub-репозиторий с ботом.
   3. Заполните настройки:
      - Name: pepe-bot (любое имя)
-     - Region: Frankfurt (EU) — ближе к серверам Telegram
+     - Region: Frankfurt (EU)
      - Branch: main
      - Runtime: Python 3
      - Build Command: pip install -r requirements.txt
      - Start Command: python main.py
-  4. Выберите план "Free" (бесплатный)
+  4. Обязательно выберите план "Free" ($0).
 
 ШАГ 4: Настройка переменных окружения (Environment Variables)
-  Важно! Не храните токены в коде на GitHub. Вместо этого:
-  1. В настройках сервиса на Render найдите раздел "Environment"
+  1. В настройках сервиса на Render найдите раздел "Environment".
   2. Добавьте переменные:
      BOT_TOKEN = ваш_токен_телеграм_бота
      API_KEY = ваш_ключ_openrouter
-  3. В config.py замените хардкод на:
-     import os
-     BOT_TOKEN = os.getenv("BOT_TOKEN", "токен_по_умолчанию")
-     DEFAULT_API_KEY = os.getenv("API_KEY", "ключ_по_умолчанию")
 
-ШАГ 5: Деплой
-  1. Нажмите "Create Background Worker"
-  2. Render автоматически установит зависимости и запустит бота
-  3. В логах (раздел "Logs") вы увидите "Bot polling started..."
-  4. Готово! Бот работает 24/7
-
-ВАЖНО — Ограничения бесплатного плана Render:
-  - Сервис может "засыпать" через 15 минут без активности
-  - Для Background Worker это обычно не проблема (polling держит процесс)
-  - Если бот перестал отвечать — зайдите в дашборд Render и нажмите
-    "Manual Deploy" → "Deploy latest commit"
-  - Бесплатный план даёт 750 часов в месяц — хватает на 1 сервис 24/7
+ШАГ 5: Деплой и "Пинговалка" (ВАЖНО!)
+  1. Нажмите "Create Web Service".
+  2. Дождитесь, пока Render соберет проект. В логах вы увидите "Keep-alive server started" и "Bot polling started...".
+  3. Render выдаст вам уникальный URL вашего приложения (например, `https://pepe-bot-xyz.onrender.com`). Скопируйте его.
+  4. Бесплатные веб-сервисы засыпают через 15 минут неактивности. Чтобы этого не произошло:
+     - Зайдите на сайт https://uptimerobot.com/ и зарегистрируйтесь (бесплатно).
+     - Нажмите "Add New Monitor".
+     - Выберите тип: "HTTP(s)".
+     - Вставьте скопированный URL от Render.
+     - Установите "Monitoring Interval" на 5 минут.
+     - Сохраните монитор.
+  5. Готово! UptimeRobot будет каждые 5 минут пинговать ваш фиктивный веб-сервер, и Render никогда не усыпит бота. Бот работает 24/7.
 
 РЕШЕНИЕ ПРОБЛЕМ:
   - "ModuleNotFoundError" → проверьте requirements.txt, все ли библиотеки указаны

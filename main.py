@@ -11,6 +11,7 @@ from apscheduler.schedulers.asyncio import AsyncIOScheduler
 from config import BOT_TOKEN
 import db
 from handlers import router
+from keep_alive import keep_alive
 
 logging.basicConfig(
     level=logging.INFO,
@@ -52,6 +53,10 @@ async def main():
     scheduler.add_job(check_reminders, "interval", seconds=60, args=[bot])
     scheduler.start()
     logger.info("Scheduler started")
+
+    # Запускаем фоновый веб-сервер для Render.com
+    keep_alive()
+    logger.info("Keep-alive server started")
 
     logger.info("Bot polling started...")
     await dp.start_polling(bot)
