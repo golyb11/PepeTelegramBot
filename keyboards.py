@@ -43,3 +43,13 @@ def model_menu_kb() -> InlineKeyboardMarkup:
         InlineKeyboardButton(text="🔙 Назад", callback_data="menu_back")
     ])
     return InlineKeyboardMarkup(inline_keyboard=buttons)
+
+
+def setmodel_direct_kb() -> InlineKeyboardMarkup:
+    """Клавиатура для прямого выбора модели (для команды /setmodel)."""
+    buttons = []
+    for model_id, display_name in AVAILABLE_MODELS.items():
+        buttons.append([
+            InlineKeyboardButton(text=display_name, callback_data=f"set_model_direct:{model_id}")
+        ])
+    return InlineKeyboardMarkup(inline_keyboard=buttons)

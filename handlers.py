@@ -14,7 +14,7 @@ from aiogram.enums import ParseMode
 
 import db
 from llm_router import ask_llm
-from keyboards import main_menu_kb, persona_menu_kb, model_menu_kb
+from keyboards import main_menu_kb, persona_menu_kb, model_menu_kb, setmodel_direct_kb
 from config import (
     PERSONAS,
     AVAILABLE_MODELS,
@@ -86,7 +86,8 @@ HELP_TEXT = (
     "    Пример: <code>/remind 15m Снять макароны</code>\n"
     "📊 /stats — Итоги чата: спамеры, матершинники.\n"
     "✨ /aura — Топ-3 лучших и худших по ауре.\n"
-    "🔑 /setkey <i>[ключ]</i> — Сменить API ключ OpenRouter.\n\n"
+    "🔑 /setkey <i>[ключ]</i> — Сменить API ключ OpenRouter.\n"
+    "🤖 /setmodel — Быстро выбрать модель через меню с кнопками.\n\n"
     "<i>Просто напиши 'Пэпэ' в сообщении, чтобы я ответил!</i>"
 )
 
@@ -109,6 +110,17 @@ async def cmd_setkey(message: Message):
     key = args[1].strip()
     await db.set_api_key(message.chat.id, key)
     await message.answer("✅ API-ключ обновлён!")
+
+
+# ---------------------------------------------------------------------------
+# /setmodel — Быстрый выбор модели
+# ---------------------------------------------------------------------------
+@router.message(Command("setmodel"))
+async def cmd_setmodel(message: Message):
+    await message.answer(
+        "👇 Выбери новую модель для этого чата:",
+        reply_markup=setmodel_direct_kb()
+    )
 
 
 # ---------------------------------------------------------------------------
@@ -198,6 +210,18 @@ async def cb_set_model(callback: CallbackQuery):
     await db.set_model(callback.message.chat.id, model_id)
     name = AVAILABLE_MODELS[model_id]
     await callback.message.edit_text(f"✅ Модель изменена на <b>{name}</b>", parse_mode=ParseMode.HTML)
+    await callback.answer("Готово!")
+
+
+@router.callback_query(F.data.startswith("set_model_direct:"))
+async def cb_set_model_direct(callback: CallbackQuery):
+    model_id = callback.data.split(":", 1)[1]
+    if model_id not in AVAILABLE_MODELS:
+        await callback.answer("❌ Неизвестная модель")
+        return
+    await db.set_model(callback.message.chat.id, model_id)
+    name = AVAILABLE_MODELS[model_id]
+    await callback.message.edit_text(f"✅ Модель успешно изменена на: <b>{name}</b>", parse_mode=ParseMode.HTML)
     await callback.answer("Готово!")
 
 
