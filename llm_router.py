@@ -29,6 +29,10 @@ async def ask_llm(
     client = AsyncOpenAI(
         base_url=OPENROUTER_BASE_URL,
         api_key=api_key,
+        default_headers={
+            "HTTP-Referer": "https://github.com/golyb11/PepeTelegramBot",
+            "X-Title": "Pepe Telegram Bot"
+        }
     )
 
     full_messages = [{"role": "system", "content": system_prompt}] + messages

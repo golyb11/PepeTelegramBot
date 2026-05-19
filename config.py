@@ -2,31 +2,27 @@
 # config.py — Конфигурация бота "Пэпэ"
 # ============================================================================
 
+import os
+
 # ---------------------------------------------------------------------------
 # Дефолтные учётные данные (fallback на первый запуск)
 # ---------------------------------------------------------------------------
-DEFAULT_API_KEY: str = (
+DEFAULT_API_KEY: str = os.getenv(
+    "OPENROUTER_API_KEY", 
     "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"
 )
-DEFAULT_MODEL: str = "inclusionai/ring-2.6-1t:free"
+DEFAULT_MODEL: str = "deepseek/deepseek-v4-flash:free"
 
 # ---------------------------------------------------------------------------
 # Список доступных моделей (старые + новые бесплатные)
 # ---------------------------------------------------------------------------
 AVAILABLE_MODELS: dict[str, str] = {
-    # --- Старые модели (сохранены) ---
-    "inclusionai/ring-2.6-1t:free": "🔹 Ring 2.6 1T",
-    "nvidia/llama-3.1-nemotron-70b-instruct:free": "🦙 Nemotron 70B",
     "baidu/cobuddy:free": "🤖 Baidu Cobuddy",
     "nvidia/nemotron-3-nano-omni-30b-a3b-reasoning:free": "🧩 Nemotron 3 Omni",
-    "google/gemma-4-31b-it:free": "💎 Gemma 4 31B",
+    "deepseek/deepseek-v4-flash:free": "👁 DeepSeek V4",
     "openai/gpt-oss-120b:free": "🌐 GPT-OSS 120B",
     "qwen/qwen3-coder:free": "💻 Qwen3 Coder",
-    # --- Новые бесплатные модели ---
-    "openrouter/auto": "🤖 OpenRouter Auto",
-    "qwen/qwen-2.5-72b-instruct:free": "🐉 Qwen 2.5 72B",
-    "meta-llama/llama-3.3-70b-instruct:free": "🦙 Llama 3.3 70B",
-    "deepseek/deepseek-v4-flash:free": "👁 DeepSeek V4",
+    "nousresearch/hermes-3-llama-3.1-405b:free": "🦙 Hermes 3 405B",
 }
 
 # Токен Telegram-бота
