@@ -96,28 +96,92 @@ HELP_TEXT = (
 
 INSTRUCTION_TEXT = (
     "📖 <b>ПОЛНОЕ РУКОВОДСТВО ПО БОТУ \"ПЭПЭ\"</b>\n\n"
-    "🎭 <b>ЛИЧНОСТИ</b> (Меняются через /menu)\n"
-    "• 🐸 <b>Пэпэ-Токсик</b>: грубит и унижает.\n"
-    "• 🤓 <b>Душнила</b>: поправляет ошибки.\n"
-    "• 🍺 <b>Бро</b>: братан, с которым можно выпить.\n"
-    "• 👩‍🍳 <b>Бабуля</b>: кормит виртуальными пирожками и дает советы по Огороду.\n"
-    "• 🎲 <b>Гейммастер</b>: превращает чат в RPG (кидает кубики).\n"
-    "• 🕵️ <b>Конспиролог</b>: знает, что всем управляют рептилоиды.\n\n"
-    "✨ <b>АУРА (Карма)</b>\n"
-    "Отправь <code>+</code>, <code>спс</code>, 👍 в реплай на чужое сообщение, "
-    "чтобы повысить Ауру автору.\n"
-    "Отправь <code>-</code>, <code>фу</code>, 👎 в реплай, чтобы понизить.\n"
-    "/aura покажет рейтинг.\n\n"
-    "🔮 <b>ИНТЕРАКТИВ</b>\n"
-    "• /horoscope — Гороскоп, который зависит от твоей Ауры.\n"
-    "• /draw <i>[текст]</i> — Бот нарисует всё, что попросишь.\n"
-    "• /findsong <i>[текст]</i> — Ищет реальные треки в Apple Music.\n\n"
-    "⏰ <b>ТАЙМЕРЫ</b>\n"
-    "Пиши: <code>/remind 10m Снять макароны</code> (m — минуты, h — часы). "
-    "Бот пнёт тебя в чате.\n\n"
-    "🧠 <b>ОБЩЕНИЕ</b>\n"
-    "Просто напиши \"Пэпэ\" в тексте, и я отвечу в стиле текущей личности. "
-    "Я помню последние 15 сообщений диалога! (сброс через /clear)"
+    
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "🗣 <b>КАК ВЫЗВАТЬ БОТА</b>\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "Бот отвечает в двух случаях:\n"
+    "• Напиши <b>\"Пэпэ\"</b> или <b>\"пепе\"</b> в любом месте сообщения\n"
+    "• Сделай <b>реплай</b> на любое сообщение бота\n\n"
+    "💡 <i>Примеры:</i>\n"
+    "<code>Пэпэ, что думаешь про новый айфон?</code>\n"
+    "<code>Эй пепе, расскажи анекдот</code>\n\n"
+    
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "🧠 <b>ПАМЯТЬ БОТА</b>\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "Бот помнит <b>последние 15 сообщений</b> диалога!\n"
+    "Это значит, что он понимает контекст разговора.\n"
+    "• /clear — стереть память и начать с чистого листа\n\n"
+    
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "🎭 <b>ЛИЧНОСТИ БОТА</b>\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "Меняются через /menu → \"Сменить личность\"\n\n"
+    "🐸 <b>Пэпэ-Токсик</b> (по умолчанию)\n"
+    "   Саркастичный тролль, грубит с юмором\n\n"
+    "🤓 <b>Душнила</b>\n"
+    "   Зануда-всезнайка, поправляет всех,\n"
+    "   цитирует Википедию, душит фактами\n\n"
+    "🍺 <b>Бро</b>\n"
+    "   Позитивный братан, поддерживает,\n"
+    "   хвалит, использует сленг\n\n"
+    "👩‍🍳 <b>Бабуля-Агроном</b>\n"
+    "   Добрая бабушка, даёт советы по огороду,\n"
+    "   кормит пирожками, называет \"внучок\"\n\n"
+    "🎲 <b>Гейммастер</b>\n"
+    "   Превращает чат в RPG, кидает D20,\n"
+    "   описывает действия эпично\n\n"
+    "🕵️ <b>Шизо-Конспиролог</b>\n"
+    "   Параноик, во всём видит заговор\n"
+    "   рептилоидов и иллюминатов\n\n"
+    
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "🧠 <b>МОДЕЛИ ИИ</b>\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "Меняются через /menu → \"Сменить модель\"\n"
+    "или быстро через /setmodel\n\n"
+    "Доступные модели (все бесплатные):\n"
+    "• 👁 DeepSeek V4 — умная, по умолчанию\n"
+    "• 🤖 Baidu Cobuddy\n"
+    "• 🧩 Nemotron 3 Omni\n"
+    "• 🌐 GPT-OSS 120B\n"
+    "• 💻 Qwen3 Coder — для кода\n"
+    "• 🦙 Hermes 3 405B — мощная\n\n"
+    
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "✨ <b>СИСТЕМА АУРЫ (КАРМА)</b>\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "Аура — это карма пользователя в чате.\n\n"
+    "<b>Как повысить ауру (+1):</b>\n"
+    "Сделай реплай на чужое сообщение и напиши:\n"
+    "<code>+</code>, <code>спасибо</code>, <code>спс</code>, 👍, <code>лучший</code>\n\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    " <b>ПРИМЕРЫ ИСПОЛЬЗОВАНИЯ</b>\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "<code>Пэпэ, оцени мой код</code>\n"
+    "<code>/ask Как работает фотосинтез?</code>\n"
+    "<code>/draw кот в космосе верхом на пицце</code>\n"
+    "<code>/findsong never gonna give you up</code>\n"
+    "<code>/remind 30m Позвонить маме</code>\n\n"
+    
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "🔧 <b>ОСОБЫЕ ТРИГГЕРЫ</b>\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "Если написать боту фразы типа:\n"
+    "<code>че скажешь</code>, <code>что думаешь</code>,\n"
+    "<code>на твой вкус</code>\n"
+    "— бот переключится в режим комментатора\n"
+    "и оценит последние сообщения чата.\n\n"
+    
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "📈 <b>СТАТИСТИКА ЧАТА</b>\n"
+    "━━━━━━━━━━━━━━━━━━━━━━━━━━━━\n"
+    "Бот автоматически считает:\n"
+    "• Количество сообщений каждого\n"
+    "• Количество слов\n"
+    "• Количество матов 🤬\n\n"
+    "Посмотреть: /stats\n"
 )
 
 
@@ -316,45 +380,17 @@ async def cmd_findsong(message: Message):
         return
 
     query = args[1].strip()
-    thinking = await message.answer("🎧 Ищу в iTunes...")
+    thinking = await message.answer("🎧 Думаю, что это за трек...")
 
-    try:
-        encoded_query = quote_plus(query)
-        url = f"https://itunes.apple.com/search?term={encoded_query}&entity=song&limit=1"
-
-        async with aiohttp.ClientSession() as session:
-            async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
-                if resp.status != 200:
-                    await thinking.edit_text("❌ iTunes API не отвечает. Попробуй позже.")
-                    return
-                data = await resp.json(content_type=None)
-
-        results = data.get("results", [])
-        if not results:
-            await thinking.edit_text(
-                "❌ Твои завывания ни на что не похожи. Ничего не нашёл."
-            )
-            return
-
-        track = results[0]
-        artist = track.get("artistName", "Неизвестный")
-        track_name = track.get("trackName", "Без названия")
-        track_url = track.get("trackViewUrl", "")
-
-        sarcasm = random.choice(FINDSONG_SARCASM)
-        
-        if track_url:
-            text = f"🎵 Нашёл! Это: <b>{artist}</b> — <b>{track_name}</b>\n<a href=\"{track_url}\">Слушать в Apple Music</a>\n\n{sarcasm}"
-        else:
-            text = f"🎵 Нашёл! Это: <b>{artist}</b> — <b>{track_name}</b>\n\n{sarcasm}"
-
-        await thinking.edit_text(text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
-
-    except asyncio.TimeoutError:
-        await thinking.edit_text("❌ iTunes слишком долго думает. Попробуй ещё раз.")
-    except Exception as e:
-        logger.error("findsong error: %s", e)
-        await thinking.edit_text("❌ Что-то пошло не так при поиске. Попробуй позже.")
+    settings = await db.get_chat_settings(message.chat.id)
+    answer = await ask_llm(
+        api_key=settings["api_key"],
+        model=settings["current_model"],
+        system_prompt=FINDSONG_SYSTEM_PROMPT,
+        messages=[{"role": "user", "content": query}],
+        max_tokens=200,
+    )
+    await thinking.edit_text(answer)
 
 
 # ---------------------------------------------------------------------------
@@ -382,15 +418,26 @@ async def cmd_draw(message: Message):
     prompt = args[1].strip()
     thinking = await message.answer("🎨 Рисую...")
 
+    settings = await db.get_chat_settings(message.chat.id)
+
     try:
-        # Формируем URL для Pollinations.ai
-        encoded_prompt = quote_plus(prompt)
+        # Переводим промпт на английский через LLM
+        translated = await ask_llm(
+            api_key=settings["api_key"],
+            model=settings["current_model"],
+            system_prompt="Translate the following text to English for an image generation prompt. Return ONLY the translated text, nothing else.",
+            messages=[{"role": "user", "content": prompt}],
+            max_tokens=150,
+        )
+        # Если перевод вернул ошибку — используем оригинал
+        if translated.startswith("❌"):
+            translated = prompt
+
+        encoded_prompt = quote_plus(translated)
         image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?nologo=true"
 
         # Пытаемся сгенерировать подпись через LLM
-        settings = await db.get_chat_settings(message.chat.id)
         caption_prompt = DRAW_CAPTION_PROMPT.format(prompt=prompt)
-
         try:
             caption = await ask_llm(
                 api_key=settings["api_key"],
@@ -399,7 +446,6 @@ async def cmd_draw(message: Message):
                 messages=[{"role": "user", "content": "Напиши подпись"}],
                 max_tokens=100,
             )
-            # Если LLM вернул ошибку, используем fallback
             if caption.startswith("❌"):
                 caption = random.choice(DRAW_FALLBACK_CAPTIONS)
         except Exception:
