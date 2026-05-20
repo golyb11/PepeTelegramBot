@@ -11,7 +11,7 @@ from datetime import datetime, timedelta
 
 import aiohttp
 from aiogram import Router, Bot, F
-from aiogram.types import Message, CallbackQuery, URLInputFile
+from aiogram.types import Message, CallbackQuery, URLInputFile, BufferedInputFile
 from aiogram.filters import Command, CommandStart
 from aiogram.enums import ParseMode
 
@@ -327,7 +327,7 @@ async def cmd_findsong(message: Message):
                 if resp.status != 200:
                     await thinking.edit_text("❌ iTunes API не отвечает. Попробуй позже.")
                     return
-                data = await resp.json()
+                data = await resp.json(content_type=None)
 
         results = data.get("results", [])
         if not results:
@@ -385,12 +385,12 @@ async def cmd_draw(message: Message):
     try:
         # Формируем URL для Pollinations.ai
         encoded_prompt = quote_plus(prompt)
-        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}"
+        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}?nologo=true"
 
         # Пытаемся сгенерировать подпись через LLM
         settings = await db.get_chat_settings(message.chat.id)
         caption_prompt = DRAW_CAPTION_PROMPT.format(prompt=prompt)
-        
+
         try:
             caption = await ask_llm(
                 api_key=settings["api_key"],
@@ -405,9 +405,16 @@ async def cmd_draw(message: Message):
         except Exception:
             caption = random.choice(DRAW_FALLBACK_CAPTIONS)
 
-        # Отправляем картинку
+        # Скачиваем картинку вручную и отправляем байтами
+        async with aiohttp.ClientSession() as session:
+            async with session.get(image_url, timeout=aiohttp.ClientTimeout(total=60)) as resp:
+                if resp.status != 200:
+                    await thinking.edit_text("❌ Не удалось получить картинку. Попробуй другой запрос.")
+                    return
+                image_bytes = await resp.read()
+
         await thinking.delete()
-        photo = URLInputFile(image_url, filename="generated.png")
+        photo = BufferedInputFile(image_bytes, filename="generated.png")
         await message.answer_photo(photo=photo, caption=f"🎨 {caption}")
 
     except Exception as e:
