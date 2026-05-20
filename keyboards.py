@@ -20,12 +20,16 @@ def main_menu_kb() -> InlineKeyboardMarkup:
 
 
 def persona_menu_kb() -> InlineKeyboardMarkup:
-    """Меню выбора персоны."""
+    """Меню выбора персоны (в 2 колонки)."""
     buttons = []
+    row = []
     for key, data in PERSONAS.items():
-        buttons.append([
-            InlineKeyboardButton(text=data["name"], callback_data=f"set_persona:{key}")
-        ])
+        row.append(InlineKeyboardButton(text=data["name"], callback_data=f"set_persona:{key}"))
+        if len(row) == 2:
+            buttons.append(row)
+            row = []
+    if row:
+        buttons.append(row)
     buttons.append([
         InlineKeyboardButton(text="🔙 Назад", callback_data="menu_back")
     ])

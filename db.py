@@ -4,7 +4,7 @@
 
 import aiosqlite
 from datetime import datetime
-from config import DATABASE_PATH, DEFAULT_API_KEY, DEFAULT_MODEL
+from config import DATABASE_PATH, DEFAULT_API_KEY, DEFAULT_MODEL, CONTEXT_LIMIT
 
 
 # ---------------------------------------------------------------------------
@@ -201,6 +201,17 @@ async def get_bottom_aura(chat_id: int, limit: int = 3):
         return await cursor.fetchall()
 
 
+async def get_user_aura(user_id: int, chat_id: int) -> int:
+    """Возвращает текущую ауру пользователя (0 если записи нет)."""
+    async with aiosqlite.connect(DATABASE_PATH) as db:
+        cursor = await db.execute(
+            "SELECT aura FROM users_stats WHERE user_id = ? AND chat_id = ?",
+            (user_id, chat_id),
+        )
+        row = await cursor.fetchone()
+        return row[0] if row else 0
+
+
 async def get_chat_stats(chat_id: int):
     """Возвращает dict с топами: messages, curses."""
     async with aiosqlite.connect(DATABASE_PATH) as db:
@@ -259,13 +270,13 @@ async def add_context(chat_id: int, role: str, content: str):
             "INSERT INTO context_memory (chat_id, message_role, message_content) VALUES (?, ?, ?)",
             (chat_id, role, content),
         )
-        # FIFO: оставляем только последние 10
+        # FIFO: оставляем только последние CONTEXT_LIMIT сообщений
         await db.execute(
-            """
+            f"""
             DELETE FROM context_memory WHERE id IN (
                 SELECT id FROM context_memory WHERE chat_id = ?
                 ORDER BY timestamp ASC
-                LIMIT MAX(0, (SELECT COUNT(*) FROM context_memory WHERE chat_id = ?) - 10)
+                LIMIT MAX(0, (SELECT COUNT(*) FROM context_memory WHERE chat_id = ?) - {CONTEXT_LIMIT})
             )
             """,
             (chat_id, chat_id),
@@ -273,7 +284,7 @@ async def add_context(chat_id: int, role: str, content: str):
         await db.commit()
 
 
-async def get_context(chat_id: int, limit: int = 10):
+async def get_context(chat_id: int, limit: int = CONTEXT_LIMIT):
     async with aiosqlite.connect(DATABASE_PATH) as db:
         db.row_factory = aiosqlite.Row
         cursor = await db.execute(

@@ -5,10 +5,13 @@
 import re
 import random
 import logging
+import asyncio
+from urllib.parse import quote_plus
 from datetime import datetime, timedelta
 
+import aiohttp
 from aiogram import Router, Bot, F
-from aiogram.types import Message, CallbackQuery
+from aiogram.types import Message, CallbackQuery, URLInputFile
 from aiogram.filters import Command, CommandStart
 from aiogram.enums import ParseMode
 
@@ -20,8 +23,9 @@ from config import (
     AVAILABLE_MODELS,
     ASSISTANT_SYSTEM_PROMPT,
     COMMENT_SYSTEM_PROMPT,
-    FINDSONG_SYSTEM_PROMPT,
     FACTCHECK_SYSTEM_PROMPT,
+    HOROSCOPE_SYSTEM_PROMPT,
+    DRAW_CAPTION_PROMPT,
     AURA_POSITIVE_TRIGGERS,
     AURA_NEGATIVE_TRIGGERS,
     AURA_POSITIVE_COMMENTS,
@@ -75,20 +79,45 @@ def _parse_remind_time(arg: str):
 # /start и /help
 # ---------------------------------------------------------------------------
 HELP_TEXT = (
-    "👋 <b>Ку, я Пэпэ!</b> Твой токсичный (или не очень) ИИ-сосед.\n\n"
-    "Вот что я умею:\n\n"
-    "⚙️ /menu — Настройки бота (Личность и Модели)\n"
-    "❓ /ask <i>[вопрос]</i> — Задать вопрос умному ассистенту без шуток.\n"
-    "🧹 /clear — Очистить мою память в этом диалоге.\n"
-    "🎵 /findsong <i>[текст]</i> — Найти песню по обрывкам слов (AI).\n"
-    "🤥 /factcheck — (Реплай на сообщение) Проверить факт на лживость.\n"
-    "⏰ /remind <i>[время] [текст]</i> — Напомнить что-то.\n"
-    "    Пример: <code>/remind 15m Снять макароны</code>\n"
-    "📊 /stats — Итоги чата: спамеры, матершинники.\n"
-    "✨ /aura — Топ-3 лучших и худших по ауре.\n"
-    "🔑 /setkey <i>[ключ]</i> — Сменить API ключ OpenRouter.\n"
-    "🤖 /setmodel — Быстро выбрать модель через меню с кнопками.\n\n"
-    "<i>Просто напиши 'Пэпэ' в сообщении, чтобы я ответил!</i>"
+    "👋 <b>Ку, я Пэпэ!</b>\n\n"
+    "⚙️ /menu — Настройки (Личности и Модели)\n"
+    "❓ /ask <i>[вопрос]</i> — Серьезный ответ от ИИ.\n"
+    "🧹 /clear — Очистить мою память (15 сообщений).\n"
+    "🎨 /draw <i>[текст]</i> — Нарисовать картинку.\n"
+    "🎵 /findsong <i>[текст]</i> — Найти трек по словам (iTunes).\n"
+    "🔮 /horoscope — Узнать свою токсичную судьбу.\n"
+    "🤥 /factcheck — (Реплай) Проверить факт.\n"
+    "⏰ /remind <i>[время] [текст]</i> — Поставить таймер.\n"
+    "📊 /stats — Итоги чата (кто спамер).\n"
+    "✨ /aura — Топ по карме (+ и -).\n"
+    "📖 <b>/instruction</b> — ПОЛНОЕ РУКОВОДСТВО!"
+)
+
+
+INSTRUCTION_TEXT = (
+    "📖 <b>ПОЛНОЕ РУКОВОДСТВО ПО БОТУ \"ПЭПЭ\"</b>\n\n"
+    "🎭 <b>ЛИЧНОСТИ</b> (Меняются через /menu)\n"
+    "• 🐸 <b>Пэпэ-Токсик</b>: грубит и унижает.\n"
+    "• 🤓 <b>Душнила</b>: поправляет ошибки.\n"
+    "• 🍺 <b>Бро</b>: братан, с которым можно выпить.\n"
+    "• 👩‍🍳 <b>Бабуля</b>: кормит виртуальными пирожками и дает советы по Огороду.\n"
+    "• 🎲 <b>Гейммастер</b>: превращает чат в RPG (кидает кубики).\n"
+    "• 🕵️ <b>Конспиролог</b>: знает, что всем управляют рептилоиды.\n\n"
+    "✨ <b>АУРА (Карма)</b>\n"
+    "Отправь <code>+</code>, <code>спс</code>, 👍 в реплай на чужое сообщение, "
+    "чтобы повысить Ауру автору.\n"
+    "Отправь <code>-</code>, <code>фу</code>, 👎 в реплай, чтобы понизить.\n"
+    "/aura покажет рейтинг.\n\n"
+    "🔮 <b>ИНТЕРАКТИВ</b>\n"
+    "• /horoscope — Гороскоп, который зависит от твоей Ауры.\n"
+    "• /draw <i>[текст]</i> — Бот нарисует всё, что попросишь.\n"
+    "• /findsong <i>[текст]</i> — Ищет реальные треки в Apple Music.\n\n"
+    "⏰ <b>ТАЙМЕРЫ</b>\n"
+    "Пиши: <code>/remind 10m Снять макароны</code> (m — минуты, h — часы). "
+    "Бот пнёт тебя в чате.\n\n"
+    "🧠 <b>ОБЩЕНИЕ</b>\n"
+    "Просто напиши \"Пэпэ\" в тексте, и я отвечу в стиле текущей личности. "
+    "Я помню последние 15 сообщений диалога! (сброс через /clear)"
 )
 
 
@@ -96,6 +125,12 @@ HELP_TEXT = (
 @router.message(Command("help"))
 async def cmd_help(message: Message):
     await message.answer(HELP_TEXT, parse_mode=ParseMode.HTML)
+
+
+@router.message(Command("instruction"))
+@router.message(Command("guide"))
+async def cmd_instruction(message: Message):
+    await message.answer(INSTRUCTION_TEXT, parse_mode=ParseMode.HTML)
 
 
 # ---------------------------------------------------------------------------
@@ -258,26 +293,157 @@ async def cmd_clear(message: Message):
 
 
 # ---------------------------------------------------------------------------
-# /findsong — поиск песни (AI)
+# /findsong — поиск песни через iTunes API (без ИИ)
 # ---------------------------------------------------------------------------
+FINDSONG_SARCASM = [
+    "Ну и вкус у тебя, конечно...",
+    "Серьёзно? Это слушают?",
+    "Мои аудио-рецепторы в шоке.",
+    "Окей, но я бы на твоём месте постеснялся.",
+    "Классика жанра 'я не такой как все'.",
+    "Держи, меломан недоделанный.",
+]
+
+
 @router.message(Command("findsong"))
 async def cmd_findsong(message: Message):
     args = message.text.split(maxsplit=1)
     if len(args) < 2 or not args[1].strip():
-        await message.answer("❌ А слова где? Пиши <code>/findsong ляляля три рубля</code>", parse_mode=ParseMode.HTML)
+        await message.answer(
+            "❌ А слова где? Пиши <code>/findsong ляляля три рубля</code>",
+            parse_mode=ParseMode.HTML,
+        )
         return
 
-    lyrics = args[1].strip()
-    settings = await db.get_chat_settings(message.chat.id)
+    query = args[1].strip()
+    thinking = await message.answer("🎧 Ищу в iTunes...")
 
-    thinking = await message.answer("🎧 Ищу песню...")
+    try:
+        encoded_query = quote_plus(query)
+        url = f"https://itunes.apple.com/search?term={encoded_query}&entity=song&limit=1"
+
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url, timeout=aiohttp.ClientTimeout(total=10)) as resp:
+                if resp.status != 200:
+                    await thinking.edit_text("❌ iTunes API не отвечает. Попробуй позже.")
+                    return
+                data = await resp.json()
+
+        results = data.get("results", [])
+        if not results:
+            await thinking.edit_text(
+                "❌ Твои завывания ни на что не похожи. Ничего не нашёл."
+            )
+            return
+
+        track = results[0]
+        artist = track.get("artistName", "Неизвестный")
+        track_name = track.get("trackName", "Без названия")
+        track_url = track.get("trackViewUrl", "")
+
+        sarcasm = random.choice(FINDSONG_SARCASM)
+        
+        if track_url:
+            text = f"🎵 Нашёл! Это: <b>{artist}</b> — <b>{track_name}</b>\n<a href=\"{track_url}\">Слушать в Apple Music</a>\n\n{sarcasm}"
+        else:
+            text = f"🎵 Нашёл! Это: <b>{artist}</b> — <b>{track_name}</b>\n\n{sarcasm}"
+
+        await thinking.edit_text(text, parse_mode=ParseMode.HTML, disable_web_page_preview=True)
+
+    except asyncio.TimeoutError:
+        await thinking.edit_text("❌ iTunes слишком долго думает. Попробуй ещё раз.")
+    except Exception as e:
+        logger.error("findsong error: %s", e)
+        await thinking.edit_text("❌ Что-то пошло не так при поиске. Попробуй позже.")
+
+
+# ---------------------------------------------------------------------------
+# /draw — генерация картинок через Pollinations.ai (бесплатно)
+# ---------------------------------------------------------------------------
+DRAW_FALLBACK_CAPTIONS = [
+    "Вот твоя мазня, наслаждайся.",
+    "Нейросеть старалась. Ты — нет.",
+    "Шедевр? Ну, кому как...",
+    "Держи свою картинку, Пикассо.",
+    "Это точно то, что ты хотел?",
+]
+
+
+@router.message(Command("draw"))
+async def cmd_draw(message: Message):
+    args = message.text.split(maxsplit=1)
+    if len(args) < 2 or not args[1].strip():
+        await message.answer(
+            "❌ Что рисовать-то? Пиши <code>/draw кот в космосе</code>",
+            parse_mode=ParseMode.HTML,
+        )
+        return
+
+    prompt = args[1].strip()
+    thinking = await message.answer("🎨 Рисую...")
+
+    try:
+        # Формируем URL для Pollinations.ai
+        encoded_prompt = quote_plus(prompt)
+        image_url = f"https://image.pollinations.ai/prompt/{encoded_prompt}"
+
+        # Пытаемся сгенерировать подпись через LLM
+        settings = await db.get_chat_settings(message.chat.id)
+        caption_prompt = DRAW_CAPTION_PROMPT.format(prompt=prompt)
+        
+        try:
+            caption = await ask_llm(
+                api_key=settings["api_key"],
+                model=settings["current_model"],
+                system_prompt=caption_prompt,
+                messages=[{"role": "user", "content": "Напиши подпись"}],
+                max_tokens=100,
+            )
+            # Если LLM вернул ошибку, используем fallback
+            if caption.startswith("❌"):
+                caption = random.choice(DRAW_FALLBACK_CAPTIONS)
+        except Exception:
+            caption = random.choice(DRAW_FALLBACK_CAPTIONS)
+
+        # Отправляем картинку
+        await thinking.delete()
+        photo = URLInputFile(image_url, filename="generated.png")
+        await message.answer_photo(photo=photo, caption=f"🎨 {caption}")
+
+    except Exception as e:
+        logger.error("draw error: %s", e)
+        await thinking.edit_text("❌ Не удалось нарисовать. Попробуй другой запрос.")
+
+
+# ---------------------------------------------------------------------------
+# /horoscope — токсичный гороскоп на основе ауры
+# ---------------------------------------------------------------------------
+@router.message(Command("horoscope"))
+async def cmd_horoscope(message: Message):
+    if not message.from_user:
+        return
+
+    user_id = message.from_user.id
+    chat_id = message.chat.id
+
+    # Получаем ауру пользователя
+    aura = await db.get_user_aura(user_id, chat_id)
+    settings = await db.get_chat_settings(chat_id)
+
+    thinking = await message.answer("🔮 Смотрю в хрустальный шар...")
+
+    # Формируем промпт с учётом ауры
+    system_prompt = HOROSCOPE_SYSTEM_PROMPT.format(aura=aura)
+
     answer = await ask_llm(
         api_key=settings["api_key"],
         model=settings["current_model"],
-        system_prompt=FINDSONG_SYSTEM_PROMPT,
-        messages=[{"role": "user", "content": lyrics}],
+        system_prompt=system_prompt,
+        messages=[{"role": "user", "content": f"Моя аура: {aura}. Дай мне гороскоп!"}],
+        max_tokens=300,
     )
-    await thinking.edit_text(answer)
+
+    await thinking.edit_text(f"🔮 <b>Твой гороскоп</b> (аура: {aura})\n\n{answer}", parse_mode=ParseMode.HTML)
 
 
 # ---------------------------------------------------------------------------
